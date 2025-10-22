@@ -12,3 +12,6 @@ Sistem, merkezi bir depo ile birden fazla mağaza arasındaki stok hareketlerini
 * **Anlık Güncellemeler:** `TRG_ANAURUNHAREKET` ve `TRG_MAGAZAHAREKET` trigger'ları ile envanterin anlık olarak güncellenmesi.
 * **Veri Bütünlüğü:** `StokYeterliMi` ve `MagazaStokYeterliMi` fonksiyonları ile negatif stok kontrolleri.
 * **Raporlama:** `MagazaOlmayanUrunleriListele` gibi envanter raporlama prosedürleri.
+
+
+Testleri Oracle Live SQL üzerinden yapılmıştır denenmek geliştirilmek istenirse bu site kullanılabilir.
