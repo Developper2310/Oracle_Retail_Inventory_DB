@@ -13,5 +13,9 @@ Sistem, merkezi bir depo ile birden fazla mağaza arasındaki stok hareketlerini
 * **Veri Bütünlüğü:** `StokYeterliMi` ve `MagazaStokYeterliMi` fonksiyonları ile negatif stok kontrolleri.
 * **Raporlama:** `MagazaOlmayanUrunleriListele` gibi envanter raporlama prosedürleri.
 
+## TABLO ŞEMASI
+
+<img width="1166" height="653" alt="image" src="https://github.com/user-attachments/assets/399a548f-893c-4204-8fcc-309a206eef71" />
+
 
 Testleri Oracle Live SQL üzerinden yapılmıştır denenmek geliştirilmek istenirse bu site kullanılabilir.
