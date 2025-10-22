@@ -1,0 +1,805 @@
+-- Marka tablosu için sequence
+CREATE SEQUENCE MarkaIDSeq
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+-- Kategori tablosu için sequence
+CREATE SEQUENCE KategoriIDSeq
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+-- Urun tablosu için sequence
+CREATE SEQUENCE UrunIDSeq
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+-- Magaza tablosu için sequence
+CREATE SEQUENCE MagazaIDSeq
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+
+-- AnaDepoMagazaTransferleri tablosu için sequence
+CREATE SEQUENCE TransferIDSeq
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+-- AnaDepoHareketleri tablosuna sequence
+CREATE SEQUENCE AnaDepoHareketIDSeq
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+
+CREATE SEQUENCE MagazaStokHareketIDSeq
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+-- Tedarikci tablosu için sequence
+CREATE SEQUENCE TedarikciIDSeq
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+CREATE TABLE Tedarikci (
+    TedarikciID NUMBER DEFAULT TedarikciIDSeq.NEXTVAL PRIMARY KEY,
+    TedarikciAdi VARCHAR2(50) NOT NULL,
+    Ulke VARCHAR2(50),
+    Eposta VARCHAR2(100)
+);
+-- Marka tablosu oluştur
+CREATE TABLE Marka (
+    MarkaID NUMBER DEFAULT MarkaIDSeq.NEXTVAL PRIMARY KEY,
+    MarkaAdi VARCHAR2(50) NOT NULL,
+    Ulke VARCHAR2(50),
+    KurulusYili NUMBER
+);
+
+-- Kategori tablosu oluştur
+CREATE TABLE Kategori (
+    KategoriID NUMBER DEFAULT KategoriIDSeq.NEXTVAL PRIMARY KEY,
+    KategoriAdi VARCHAR2(50) NOT NULL
+);
+
+-- Urun tablosu oluştur
+CREATE TABLE Urun (
+    UrunID NUMBER DEFAULT UrunIDSeq.NEXTVAL PRIMARY KEY,
+    UrunAdi VARCHAR2(100) NOT NULL,
+    KategoriID NUMBER,
+    MarkaID NUMBER,
+    Fiyat NUMBER,
+    FOREIGN KEY (KategoriID) REFERENCES Kategori(KategoriID),
+    FOREIGN KEY (MarkaID) REFERENCES Marka(MarkaID)
+);
+
+-- Magaza tablosu oluştur
+CREATE TABLE Magaza (
+    MagazaID NUMBER DEFAULT MagazaIDSeq.NEXTVAL PRIMARY KEY,
+    MagazaAd VARCHAR2(80) NOT NULL,
+    Adres VARCHAR2(200),
+    Eposta VARCHAR2(100)
+);
+
+-- MagazaUrunleri tablosu oluştur
+CREATE TABLE MagazaUrunleri (
+    MagazaID NUMBER,
+    UrunID NUMBER,
+    StokMiktari NUMBER,
+    PRIMARY KEY (MagazaID, UrunID),
+    FOREIGN KEY (MagazaID) REFERENCES Magaza(MagazaID),
+    FOREIGN KEY (UrunID) REFERENCES Urun(UrunID)
+);
+
+-- AnaDepoUrunleri tablosu oluştur
+CREATE TABLE AnaDepoUrunleri (
+    UrunID NUMBER PRIMARY KEY,
+    StokMiktari NUMBER,
+    FOREIGN KEY (UrunID) REFERENCES Urun(UrunID)
+);
+
+
+
+
+-- AnaDepoMagazaTransferleri tablosu oluştur
+CREATE TABLE AnaDepoMagazaTransferleri (
+    TransferID NUMBER DEFAULT TransferIDSeq.NEXTVAL PRIMARY KEY,
+    TedarikciID number,
+    MagazaID NUMBER,
+    TransferTarihi DATE,
+    IslemTur NUMBER(1),
+    FOREIGN KEY (MagazaID) REFERENCES Magaza(MagazaID)
+    FOREIGN KEY (TedarikciID) REFERENCES Tedarikci(TedarikciID)
+
+);   
+
+
+-- TransferUrunleri tablosunu oluştur
+CREATE TABLE TransferUrunleri (
+    TransferID NUMBER,
+    UrunID NUMBER,
+    Adet Number,
+    FOREIGN KEY (TransferID) REFERENCES AnaDepoMagazaTransferleri(TransferID),
+    FOREIGN KEY (UrunID) REFERENCES Urun(UrunID)
+);
+
+
+
+-- AnaDepoHareketleri tablosunu oluştur
+CREATE TABLE AnaDepoHareketleri (
+    HareketID NUMBER DEFAULT AnaDepoHareketIDSeq.NEXTVAL PRIMARY KEY,
+    HareketTarihi DATE,
+    IslemTur NUMBER(1) -- 0: Ürün Ekleme, 1: İade Alma
+);
+
+-- AnaUrunHareket tablosunu oluştur
+CREATE TABLE AnaUrunHareket (
+    HareketID NUMBER,
+    UrunID NUMBER,
+    Adet NUMBER,
+    IslemTur NUMBER(1), -- 0: Ürün Ekleme, 1: İade Alma
+    FOREIGN KEY (HareketID) REFERENCES AnaDepoHareketleri(HareketID),
+    FOREIGN KEY (UrunID) REFERENCES Urun(UrunID)
+);
+
+
+CREATE TABLE MagazaHareketleri (
+    HareketID NUMBER,
+    UrunID NUMBER,
+    Adet NUMBER,
+    FOREIGN KEY (HareketID) REFERENCES MagazaStokHareketleri(StokHareketID),
+    FOREIGN KEY (UrunID) REFERENCES Urun(UrunID)
+);
+
+
+CREATE TABLE MagazaStokHareketleri (
+    StokHareketID NUMBER DEFAULT MagazaStokHareketIDSeq.NEXTVAL PRIMARY KEY,
+    HareketTarihi DATE,
+    IslemTur NUMBER(1) -- 0: Ürün Çıkarma, 1: İade Alma
+);
+--------------------------------------------------------------------------------------------
+--tüm tabloları listele
+SELECT table_name
+FROM user_tables;
+----------------------------------------------------------------------------------------
+INSERT INTO Tedarikci (TedarikciID, TedarikciAdi, Ulke, Eposta)
+VALUES (TedarikciIDSeq.NEXTVAL, 'Tedarikci1', 'TedarikciUlke1', 'tedarikci1@example.com');
+
+INSERT INTO Marka (MarkaID, MarkaAdi, Ulke, KurulusYili)
+VALUES (MarkaIDSeq.NEXTVAL, 'Nike', 'ABD', 1964);
+
+-- Kategori ekleyen SQL
+INSERT INTO Kategori (KategoriID, KategoriAdi)
+VALUES (KategoriIDSeq.NEXTVAL, 'Ayakkabı');
+
+-- Ürün ekleyen SQL
+INSERT INTO Urun (UrunID, UrunAdi, KategoriID, MarkaID, Fiyat)
+VALUES (UrunIDSeq.NEXTVAL, 'Air Max', 1, 1, 200);
+
+
+-------------------------------------------------------------------------------------------
+
+
+-- Ürünleri ekleyen SQL
+INSERT INTO Urun (UrunID, UrunAdi, KategoriID, MarkaID, Fiyat)
+values
+
+  (UrunIDSeq.NEXTVAL, 'Ürün3', 1, 1, 120);
+select   * froM Urun;
+-- Urun tablosuna unique constraint ekle
+ALTER TABLE Kategori ADD CONSTRAINT UQ_Kategori UNIQUE (KategoriAdi);
+ALTER TABLE Urun ADD CONSTRAINT UQ_UrunAdi UNIQUE (UrunAdi);
+
+INSERT INTO AnaDepoUrunleri (UrunID, StokMiktari)
+VALUES (1, 50);
+---------------------------------------------------------------------------------------------------
+-------------------------Prosedür ve fonksiyonlar--------------------------------------------------
+
+
+-- ADH-AUH procedure--------------------->><<---------------
+
+CREATE OR REPLACE PROCEDURE AnaDepoHareketEkle (
+    p_UrunAdetListesi SYS.ODCIVARCHAR2LIST,
+    p_IslemTur NUMBER
+) AS
+    v_HareketID NUMBER;
+BEGIN
+    -- AnaDepoHareket tablosuna kayıt ekle
+    INSERT INTO AnaDepoHareketleri (HareketID, HareketTarihi, IslemTur)
+    VALUES (AnaDepoHareketIDSeq.NEXTVAL, SYSDATE, p_IslemTur)
+    RETURNING HareketID INTO v_HareketID;
+
+    -- UrunAdetListesi içindeki her bir ürün ve adet bilgisini işle
+    FOR i IN 1..p_UrunAdetListesi.COUNT LOOP
+        DECLARE
+            UrunID NUMBER;
+            Adet NUMBER;
+        BEGIN
+            -- Kullanıcıdan gelen ürün adı ve adet bilgisini ayrıştır
+            UrunID := TO_NUMBER(REGEXP_SUBSTR(p_UrunAdetListesi(i), '\d+'));
+            Adet := TO_NUMBER(REGEXP_SUBSTR(p_UrunAdetListesi(i), '\d+$'));
+
+            -- Eğer ürün kaydı yoksa, kaydı oluştur
+            IF NOT UrunKaydiVarMi(UrunID) THEN
+                DBMS_OUTPUT.PUT_LINE('Ürün kaydı bulunamadı. Yeni kayıt oluşturuluyor...');
+                INSERT INTO AnaDepoUrunleri (UrunID, StokMiktari)
+                VALUES (UrunID, 0);
+
+              COMMIT;
+            END IF;
+            -- Stok yeterlilik kontrolü
+			if(p_IslemTur=0)then
+            IF NOT StokYeterliMi(UrunID, Adet, v_HareketID) THEN
+                DBMS_OUTPUT.PUT_LINE('Hata: Stok miktarı yetersiz!');
+                RETURN;
+            END IF;
+		END IF;
+
+            -- AnaUrunHareket tablosuna kayıt ekle
+            INSERT INTO AnaUrunHareket (HareketID, UrunID, Adet)
+            VALUES (v_HareketID, UrunID, Adet);
+
+
+        EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('Hata: ' || SQLERRM);
+        END;
+    END LOOP;
+
+    COMMIT; -- İşlemi tamamla
+END AnaDepoHareketEkle;
+/
+
+------------------<<<<<<<<<<<<<<<<  StokYeterliMi  >>>>>>>>>>>>>>>>>>>>
+CREATE OR REPLACE FUNCTION StokYeterliMi (
+    p_UrunID NUMBER,
+    p_Adet NUMBER,
+    p_HareketID NUMBER
+) RETURN BOOLEAN AS
+    v_StokMiktari NUMBER;
+BEGIN
+    
+    -- UrunID'ye göre stok miktarını al
+    SELECT StokMiktari INTO v_StokMiktari
+    FROM AnaDepoUrunleri
+    WHERE UrunID = p_UrunID;
+
+    -- Stok yeterli mi kontrolü
+    IF v_StokMiktari < p_Adet THEN
+        DBMS_OUTPUT.PUT_LINE('Hata: Stok miktarı yetersiz!');
+        RETURN FALSE;
+    END IF;
+
+    -- HareketID kontrolü
+    IF p_HareketID = 0 THEN
+        RETURN TRUE;
+    END IF;
+
+    -- HareketID'ye göre stok miktarını kontrol et
+    SELECT SUM(Adet) INTO v_StokMiktari
+    FROM AnaUrunHareket
+    WHERE UrunID = p_UrunID AND HareketID = p_HareketID;
+
+    RETURN v_StokMiktari >= p_Adet;
+END StokYeterliMi;
+/
+
+------------------<<<<<<<<<<<<<<<< UrunKaydiVarMi >>>>>>>>>>>>>>>>>>>>
+CREATE OR REPLACE FUNCTION UrunKaydiVarMi (
+    p_UrunID NUMBER
+) RETURN BOOLEAN AS
+    v_UrunSayisi NUMBER;
+BEGIN
+
+    SELECT COUNT(*)
+    INTO v_UrunSayisi
+    FROM AnaDepoUrunleri
+    WHERE UrunID = p_UrunID;
+
+
+    RETURN v_UrunSayisi > 0;
+END UrunKaydiVarMi;
+
+----------------------------------------------- MSH ve MH Prosedür ve fonksiyonları -------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------- MSH ve MH Prosedür ve fonksiyonları -------------------------------------------------
+
+---MSH ve MH leri oluştur
+DECLARE
+    v_UrunAdetListesi SYS.ODCIVARCHAR2LIST := SYS.ODCIVARCHAR2LIST('36:10', '24:5', '29:400');
+    v_MagazaID NUMBER := 5; -- MagazaID'yi uygun bir değerle değiştir
+    v_IslemTur NUMBER := 1; -- İşlem Türü, uygun bir değerle değiştir
+BEGIN
+    MagazaHareketEkle(v_UrunAdetListesi, v_MagazaID, v_IslemTur);
+END;
+/
+
+--Kayıtlara bakmak için
+    select a.IslemTur, b.*,c.UrunAdi from MagazaStokHareketleri a join MagazaHareketleri b on a.StokHareketID=b.HareketID join Urun c on b.UrunID=c.UrunID
+
+
+--MagazaUrunleri
+    select c.MagazaAD as Mağaza_Adı ,UrunAdi,a.StokMiktari from MagazaUrunleri a join Urun b on a.UrunID=b.UrunID join Magaza c on a.MagazaID=c.MagazaID
+
+
+
+--<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<MagazaStokYeterliMi >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+CREATE OR REPLACE FUNCTION MagazaStokYeterliMi (
+    p_UrunID NUMBER,
+    p_Adet NUMBER,
+    p_MagazaID NUMBER,
+    p_HareketID NUMBER
+) RETURN BOOLEAN AS
+    v_StokMiktari NUMBER;
+    v_Urun VARCHAR2(255); -- Define the variable to hold UrunAdi
+BEGIN
+    -- UrunID'ye göre stok miktarını al
+    SELECT StokMiktari, UrunAdi INTO v_StokMiktari, v_Urun
+    FROM MagazaUrunleri
+    JOIN Urun ON MagazaUrunleri.UrunID = Urun.UrunID
+    WHERE MagazaUrunleri.UrunID = p_UrunID AND MagazaUrunleri.MagazaID = p_MagazaID;
+
+    -- HareketID kontrolü
+    IF p_HareketID = 1 THEN
+        RETURN TRUE;
+    END IF;
+
+    -- Stok yeterli mi kontrolü
+    IF v_StokMiktari < p_Adet THEN
+        DBMS_OUTPUT.PUT_LINE('Hata: Stok miktarı yetersiz! Urun Adı: ' || v_Urun || ', Mevcut Stok: ' || v_StokMiktari || ', Çıkarılmak istenen: '|| p_Adet);
+        RETURN FALSE;
+    END IF;
+
+    -- HareketID'ye göre stok miktarını kontrol et
+    SELECT SUM(Adet) INTO v_StokMiktari
+    FROM MagazaHareketleri
+    WHERE UrunID = p_UrunID AND HareketID = p_HareketID;
+
+    RETURN v_StokMiktari >= p_Adet;
+END MagazaStokYeterliMi;
+/
+
+--INSERT INTO Magaza (MagazaAd, Adres, Eposta) VALUES ('Karmark Kızılay', 'Ankara Caddesi No:12, Kızılay, Ankara', 'karmarkmoda@example.com');
+--INSERT INTO Magaza (MagazaAd, Adres, Eposta) VALUES ('Karmark Eryaman', 'Ankara Caddesi No:24, Eryaman, Ankara', 'karmarktech@example.com');
+--INSERT INTO Magaza (MagazaAd, Adres, Eposta) VALUES ('Karmark Kocatepe', 'Kocatepe Sokak No:7, Kızılay, Ankara', 'karmarkelektronik@example.com');
+--INSERT INTO Magaza (MagazaAd, Adres, Eposta) VALUES ('Karmark Sincan', 'Atatürk Bulvarı No:45, Sincan, Ankara', 'karmarkspor@example.com');
+--INSERT INTO Magaza (MagazaAd, Adres, Eposta) VALUES ('Karmark Yenimahalle', 'Müze Caddesi No:3, Yenimahalle, Ankara', 'karmarkgourmet@example.com');
+
+--<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< MagazaUrunKaydiVarMi >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+CREATE OR REPLACE FUNCTION MagazaUrunKaydiVarMi (
+    p_UrunID NUMBER,
+    p_MagazaID NUMBER
+) RETURN BOOLEAN AS
+    v_UrunSayisi NUMBER;
+BEGIN
+    -- UrunID ve MagazaID'ye sahip kayıt sayısını kontrol et
+    SELECT COUNT(*)
+    INTO v_UrunSayisi
+    FROM MagazaUrunleri
+    WHERE UrunID = p_UrunID AND MagazaID = p_MagazaID;
+
+    -- Kayıt var mı yok mu kontrolü
+    RETURN v_UrunSayisi > 0;
+END MagazaUrunKaydiVarMi;
+/
+
+--<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< MagazaHareketEkle >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Prosedür---------
+
+CREATE OR REPLACE PROCEDURE MagazaHareketEkle (
+    p_UrunAdetListesi SYS.ODCIVARCHAR2LIST,
+    p_MagazaID NUMBER,
+    p_IslemTur NUMBER
+) AS
+    v_HareketID NUMBER;
+    a_UrunID NUMBER; 
+    Adet NUMBER; 
+    Urun_ad VARCHAR(50);
+BEGIN
+    -- MagazaStokHareketleri tablosuna kayıt ekle
+    INSERT INTO MagazaStokHareketleri (StokHareketID, HareketTarihi, IslemTur,MagazaID)
+    VALUES (HAREKETID_SEQUENCE.NEXTVAL, SYSDATE, p_IslemTur,p_MagazaID)
+    RETURNING StokHareketID INTO v_HareketID;
+
+    -- UrunAdetListesi içindeki her bir ürün ve adet bilgisini işle
+    FOR i IN 1..p_UrunAdetListesi.COUNT LOOP
+        BEGIN
+            -- Kullanıcıdan gelen ürün adı ve adet bilgisini ayrıştır
+            a_UrunID := TO_NUMBER(REGEXP_SUBSTR(p_UrunAdetListesi(i), '\d+'));
+            Adet := TO_NUMBER(REGEXP_SUBSTR(p_UrunAdetListesi(i), '\d+$'));
+
+DBMS_OUTPUT.PUT_LINE( a_UrunID || '  ürünü');
+            -- Eğer ürün kaydı yoksa, kaydı oluştur
+            IF NOT MagazaUrunKaydiVarMi(a_UrunID, p_MagazaID) THEN
+                SELECT UrunAdi INTO Urun_ad FROM Urun WHERE UrunID = a_UrunID;
+                DBMS_OUTPUT.PUT_LINE(Urun_ad || ' Ürününün kaydı bulunamadı. Yeni kayıt oluşturuluyor...');
+                INSERT INTO MagazaUrunleri (MagazaID, UrunID, StokMiktari)
+                VALUES (p_MagazaID, a_UrunID, 0);
+            END IF;
+
+            if(p_IslemTur=0)then-- Stok yeterlilik kontrolü
+            IF NOT MagazaStokYeterliMi(a_UrunID, Adet, p_MagazaID, v_HareketID) THEN
+                DBMS_OUTPUT.PUT_LINE('Hata: Stok miktarı yetersiz!');
+                ROLLBACK;
+                RETURN;
+            END IF;
+            end if;
+
+            -- MagazaHareketleri tablosuna kayıt ekle
+            INSERT INTO MagazaHareketleri (HareketID, UrunID, Adet)
+            VALUES (v_HareketID, a_UrunID, Adet);
+
+         
+        EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('Hata: ' || SQLERRM);
+        END;
+    END LOOP;
+
+    COMMIT; -- İşlemi tamamla
+END MagazaHareketEkle;
+/
+
+
+------------------------------------------------ AnaDepoMagazaTransferEkle ----------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------AnaDepoMagazaTransferEkle ----------------------------------------------------
+
+DECLARE
+    v_UrunAdetListesi SYS.ODCIVARCHAR2LIST := SYS.ODCIVARCHAR2LIST('36:10', '24:500', '29:400');
+    v_MagazaID NUMBER := 5; -- MagazaID'yi uygun bir değerle değiştir
+    v_IslemTur NUMBER := 1; -- İşlem Türü, uygun bir değerle değiştir
+
+BEGIN
+    -- Prosedürü çağır ve dönen değeri al
+ AnaDepoMagazaTransferEkle(v_MagazaID, v_IslemTur, v_UrunAdetListesi);
+END;
+/
+    
+select a.StokMiktari,b.MagazaAd,c.UrunAdi from MagazaUrunleri a join Magaza b on a.MagazaID=b.MagazaID join Urun c on a.UrunID= c.UrunID
+select a.stokMiktari,c.UrunAdi from AnaDepoUrunleri a join Urun c on a.UrunID= c.UrunID
+
+
+CREATE OR REPLACE PROCEDURE AnaDepoMagazaTransferEkle (
+    p_MagazaID NUMBER,
+    p_IslemTur NUMBER,
+    p_UrunAdetListesi SYS.ODCIVARCHAR2LIST
+) AS
+    v_TransferID NUMBER;
+BEGIN
+    -- AnaDepoMagazaTransferleri tablosuna yeni bir transfer ekleyerek TransferID al
+    INSERT INTO AnaDepoMagazaTransferleri (MagazaID, TransferTarihi, IslemTur)
+    VALUES (p_MagazaID, SYSDATE, p_IslemTur)
+    RETURNING TransferID INTO v_TransferID;
+
+    -- UrunAdetListesi'ndeki her bir öğe için TransferUrunleri tablosuna kayıt ekle
+    FOR i IN 1..p_UrunAdetListesi.COUNT LOOP
+        -- UrunAdetListesi'nden UrunID ve Adet'i al
+        DECLARE
+            v_UrunID NUMBER;
+            v_Adet NUMBER;
+        BEGIN
+            v_UrunID := TO_NUMBER(REGEXP_SUBSTR(p_UrunAdetListesi(i), '^\d+'));
+            v_Adet := TO_NUMBER(REGEXP_SUBSTR(p_UrunAdetListesi(i), '\d+$'));
+
+            -- TransferUrunKaydiVarMi fonksiyonunu kullanarak gerekli kontrolü yap
+            IF NOT TransferUrunKaydiVarMi(v_UrunID, v_TransferID) THEN
+                DBMS_OUTPUT.PUT_LINE('Hata: TransferUrun kaydı bulunamadı. Yeni kayıt oluşturuluyor...');
+                INSERT INTO TransferUrunleri (TransferID, UrunID, Adet)
+                VALUES (v_TransferID, v_UrunID, 0);
+            END IF;
+
+            -- TransferStokYeterliMi fonksiyonunu kullanarak gerekli kontrolü yap
+            IF NOT TransferStokYeterliMi(v_UrunID, v_Adet, p_MagazaID, p_IslemTur) THEN
+                DBMS_OUTPUT.PUT_LINE('Hata: Transfer için stok yeterli değil. Transfer iptal ediliyor...');
+                -- Transfer iptali için gerekli işlemler yapılabilir, şu an için pas geçildi
+                RETURN;
+            END IF;
+
+            -- TransferUrunleri tablosuna kayıt ekle
+            INSERT INTO TransferUrunleri (TransferID, UrunID, Adet)
+            VALUES (v_TransferID, v_UrunID, v_Adet);
+
+        EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('Hata: ' || SQLERRM);
+        END;
+    END LOOP;
+
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Hata: ' || SQLERRM);
+END AnaDepoMagazaTransferEkle;
+/
+
+
+
+
+      -- Fonksiyon: TransferStokYeterliMi---------------------------------------
+CREATE OR REPLACE FUNCTION TransferStokYeterliMi (
+    p_UrunID NUMBER,
+    p_Adet NUMBER,
+    p_MagazaID NUMBER,
+    p_TransferTur NUMBER
+) RETURN BOOLEAN AS
+    v_HedefMagazaID NUMBER;
+BEGIN
+
+
+    -- Transfer türüne göre ilgili stok yeterlilik kontrolünü çağır
+    IF p_TransferTur = 0 THEN
+        -- Çıkarma işlemi için Anadepo stok yeterlilik kontrolü
+        RETURN StokYeterliMi(p_UrunID, p_Adet,0);
+    ELSIF p_TransferTur = 1 THEN
+        -- Arttırma işlemi için belirtilen magaza stok yeterlilik kontrolü
+        RETURN MagazaStokYeterliMi(p_UrunID, p_Adet, p_MagazaID, 0);
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Hata: ' || SQLERRM);
+        RETURN FALSE; -- Diğer hatalar için FALSE döndür
+END TransferStokYeterliMi;
+/
+
+    --------------------------------------------------
+    
+CREATE OR REPLACE FUNCTION TransferUrunKaydiVarMi (
+    p_UrunID NUMBER,
+    p_TransferID NUMBER
+) RETURN BOOLEAN AS
+    v_UrunSayisi NUMBER;
+    v_MagazaID NUMBER;
+BEGIN
+    -- UrunID ve TransferID'ye sahip kayıt sayısını kontrol et
+    SELECT  MagazaID
+    INTO  v_MagazaID
+    FROM AnaDepoMagazaTransferleri
+    WHERE  TransferID = p_TransferID;
+
+    -- Kayıt varsa, MagazaUrunleri'nde de kontrol et
+    IF v_UrunSayisi > 0 THEN
+        IF NOT MagazaUrunKaydiVarMi(p_UrunID, v_MagazaID) THEN
+            -- Eğer MagazaUrunleri'nde kayıt yoksa, yeni kayıt oluştur
+            DBMS_OUTPUT.PUT_LINE('Hata: MagazaUrunleri kaydı bulunamadı. Yeni kayıt oluşturuluyor...');
+            INSERT INTO MagazaUrunleri (MagazaID, UrunID, StokMiktari)
+            VALUES (v_MagazaID, p_UrunID, 0);
+        END IF;
+
+        -- AnadepoUrunleri'nde de kontrol et
+        IF NOT UrunKaydiVarMi(p_UrunID) THEN
+            -- Eğer AnadepoUrunleri'nde kayıt yoksa, yeni kayıt oluştur
+            DBMS_OUTPUT.PUT_LINE('Hata: AnadepoUrunleri kaydı bulunamadı. Yeni kayıt oluşturuluyor...');
+            INSERT INTO AnadepoUrunleri (UrunID, StokMiktari)
+            VALUES (p_UrunID, 0);
+        END IF;
+
+        RETURN TRUE; -- Kayıt varsa TRUE döndür
+    ELSE
+        RETURN TRUE; -- Kayıt yoksa FALSE döndür
+    END IF;
+END TransferUrunKaydiVarMi;
+/
+
+
+
+
+-- Trigger: TRG_TransferUrunleri
+CREATE OR REPLACE TRIGGER TRG_TransferUrunleri
+AFTER INSERT ON TransferUrunleri
+FOR EACH ROW
+DECLARE
+    v_StokMiktari NUMBER;
+    v_IslemTur NUMBER;
+BEGIN
+    -- TransferUrunleri tablosundaki stok miktarını ve işlemtürünü güncelle
+    SELECT MU.StokMiktari, AT.IslemTur
+    INTO v_StokMiktari, v_IslemTur
+    FROM MagazaUrunleri MU
+    JOIN AnaDepoMagazaTransferleri AT ON MU.MagazaID = AT.MagazaID
+    WHERE MU.UrunID = :NEW.UrunID AND AT.TransferID = :NEW.TransferID;
+
+    -- MagazaUrunleri tablosundaki stok miktarını işlemtürüne göre güncelle
+    IF v_IslemTur = 1 THEN
+        -- İşlemtürü 1 ise (Arttırma), magaza stoğunu arttır, anadepo stoğunu azalt
+        UPDATE MagazaUrunleri
+        SET StokMiktari = v_StokMiktari + :NEW.Adet
+        WHERE UrunID = :NEW.UrunID;
+
+        UPDATE AnaDepoUrunleri
+        SET StokMiktari = StokMiktari - :NEW.Adet
+        WHERE UrunID = :NEW.UrunID;
+    ELSIF v_IslemTur = 0 THEN
+        -- İşlemtürü 0 ise (Çıkarma), magaza stoğunu azalt, anadepo stoğunu arttır
+        UPDATE MagazaUrunleri
+        SET StokMiktari = v_StokMiktari - :NEW.Adet
+        WHERE UrunID = :NEW.UrunID;
+
+        UPDATE AnaDepoUrunleri
+        SET StokMiktari = StokMiktari + :NEW.Adet
+        WHERE UrunID = :NEW.UrunID;
+    END IF;
+
+    COMMIT; -- İşlemi tamamla
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Hata: ' || SQLERRM);
+END;
+/
+	
+
+-------------------------------------Triggerler---------------------------------------------------
+-----AUH Trigger i_------------------------------------
+CREATE OR REPLACE TRIGGER TRG_ANAURUNHAREKET
+BEFORE INSERT ON AnaUrunHareket
+FOR EACH ROW
+DECLARE
+    v_IslemTur NUMBER;
+BEGIN
+    -- ADH tablosundan işlemtürü bilgisini al
+    SELECT IslemTur INTO v_IslemTur
+    FROM AnaDepoHareketleri
+    WHERE HareketID = :NEW.HareketID;
+
+
+    -- Stok miktarını güncelle
+    UPDATE AnaDepoUrunleri
+    SET StokMiktari = StokMiktari + CASE WHEN v_IslemTur = 1 THEN :NEW.Adet ELSE - :NEW.Adet END
+    WHERE UrunID = :NEW.UrunID;
+END;
+/
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< TRG_MAGAZAHAREKET >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+CREATE OR REPLACE TRIGGER TRG_MAGAZAHAREKET
+AFTER INSERT ON MagazaHareketleri
+FOR EACH ROW
+DECLARE
+    v_StokMiktari NUMBER;
+    v_IslemTur NUMBER;
+    v_MagazaID NUMBER;
+BEGIN
+    -- MagazaUrunleri tablosundaki stok miktarını güncelle
+    SELECT IslemTur, MagazaID
+    INTO v_IslemTur, v_MagazaID
+    FROM MagazaStokHareketleri
+    WHERE StokHareketID = :NEW.HareketID;
+
+    UPDATE MagazaUrunleri
+    SET StokMiktari = StokMiktari + CASE WHEN v_IslemTur = 1 THEN :NEW.Adet ELSE - :NEW.Adet END
+    WHERE UrunID = :NEW.UrunID AND MagazaID = v_MagazaID;
+
+ DBMS_OUTPUT.PUT_LINE('IslemTur: ' || v_IslemTur || ', MagazaID: ' || v_MagazaID);
+
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Hata: ' || SQLERRM);
+END;
+/
+
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< TRG_TransferUrunleri>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+CREATE OR REPLACE TRIGGER TRG_TransferUrunleri
+AFTER INSERT ON TransferUrunleri
+FOR EACH ROW
+DECLARE
+    v_StokMiktari NUMBER;
+    v_IslemTur NUMBER;
+BEGIN
+    -- TransferUrunleri tablosundaki stok miktarını ve işlemtürünü güncelle
+    SELECT MU.StokMiktari, AT.IslemTur
+    INTO v_StokMiktari, v_IslemTur
+    FROM MagazaUrunleri MU
+    JOIN AnaDepoMagazaTransferleri AT ON MU.MagazaID = AT.MagazaID
+    WHERE MU.UrunID = :NEW.UrunID AND AT.TransferID = :NEW.TransferID;
+
+    -- MagazaUrunleri tablosundaki stok miktarını işlemtürüne göre güncelle
+    IF v_IslemTur = 1 THEN
+        -- İşlemtürü 1 ise (Arttırma), magaza stoğunu arttır, anadepo stoğunu azalt
+        UPDATE MagazaUrunleri
+        SET StokMiktari = v_StokMiktari + :NEW.Adet
+        WHERE UrunID = :NEW.UrunID;
+
+        UPDATE AnaDepoUrunleri
+        SET StokMiktari = StokMiktari - :NEW.Adet
+        WHERE UrunID = :NEW.UrunID;
+    ELSIF v_IslemTur = 0 THEN
+        -- İşlemtürü 0 ise (Çıkarma), magaza stoğunu azalt, anadepo stoğunu arttır
+        UPDATE MagazaUrunleri
+        SET StokMiktari = v_StokMiktari - :NEW.Adet
+        WHERE UrunID = :NEW.UrunID;
+
+        UPDATE AnaDepoUrunleri
+        SET StokMiktari = StokMiktari + :NEW.Adet
+        WHERE UrunID = :NEW.UrunID;
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Hata: ' || SQLERRM);
+END;
+/
+
+------------------------------------------------------------ JOBLAR
+
+EXEC DBMS_SCHEDULER.enable;
+
+BEGIN
+ DBMS_SCHEDULER.create_job (
+  job_name        => 'VERI_GIRIS_KONTROL',
+  job_type        => 'PLSQL_BLOCK',
+  job_action      => 'BEGIN
+                       DECLARE
+                         v_current_hour NUMBER;
+                       BEGIN
+                         -- Şu andaki saat bilgisini alIyor
+                         SELECT TO_NUMBER(TO_CHAR(SYSDATE, ''HH24'')) INTO v_current_hour FROM dual;
+
+                         IF v_current_hour BETWEEN 0 AND 7 AND EXISTS (SELECT 1 FROM your_table WHERE veri_girisi_yapilmaya_calisiliyor) THEN
+                          
+                           send_notification_to_admin(Magazaid);--buraya temsili prosedür yazdım gerçekte yok. e posta işlemini simgeliyor.
+                         END IF;
+                       END;',
+  start_date      => TO_TIMESTAMP('12:00:00', 'HH24:MI:SS'), -- Job'u gece 12'de başlat
+  repeat_interval => 'FREQ=MINUTELY; BYMINUTE=0; BYSECOND=0', -- Her dakika kontrol et
+  enabled         => TRUE
+ );
+END;
+/
+
+
+---------------------------------------------------------------------------son prosedür------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE MagazaOlmayanUrunleriListele IS
+BEGIN
+    FOR magaza IN (SELECT * FROM Magaza) LOOP
+        DBMS_OUTPUT.PUT_LINE('Magaza ID: ' || magaza.MagazaID || ', Ad: ' || magaza.MagazaAd);
+        
+        FOR urun IN (SELECT ADU.UrunID, ADU.StokMiktari
+                     FROM AnaDepoUrunleri ADU
+                     WHERE NOT EXISTS (SELECT 1 FROM MagazaUrunleri MU WHERE MU.UrunID = ADU.UrunID AND MU.MagazaID = magaza.MagazaID)) LOOP
+            DECLARE
+                urunadi_c VARCHAR(100); -- Değişkenin tanımlanması buraya alındı
+            BEGIN
+                -- Urun tablosu yerine AnaDepoUrunleri tablosundan veri alınıyor
+              
+                SELECT UrunAdi INTO urunadi_c FROM Urun a WHERE a.UrunID = urun.UrunID;
+
+                DBMS_OUTPUT.PUT_LINE('    Urun: ' || urunadi_c || ', mağazada yok: ' || magaza.MagazaAd);
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                    DBMS_OUTPUT.PUT_LINE('    Urun: (Bilgi bulunamadı), mağazada yok: ' || magaza.MagazaAd);
+                WHEN TOO_MANY_ROWS THEN
+                    DBMS_OUTPUT.PUT_LINE('    Urun: (Çok fazla satır bulundu), mağazada yok: ' || magaza.MagazaAd);
+                WHEN OTHERS THEN
+                    DBMS_OUTPUT.PUT_LINE('    Hata: ' || SQLERRM);
+            END;
+        END LOOP;
+    END LOOP;
+END MagazaOlmayanUrunleriListele;
+/
+
+BEGIN
+    MagazaOlmayanUrunleriListele();
+END;
+/
